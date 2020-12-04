@@ -65,9 +65,7 @@ public final class ProxyTunnelInitHandler extends ChannelDuplexHandler {
         HttpRequest connectRequest = connectRequest();
         ctx.channel().writeAndFlush(connectRequest).addListener(f -> {
             if (!f.isSuccess()) {
-                ctx.close();
-                sourcePool.release(ctx.channel());
-                initPromise.setFailure(new IOException("Unable to send CONNECT request to proxy", f.cause()));
+                handleConnectRequestFailure(ctx, f.cause());
             }
         });
     }
@@ -96,6 +94,31 @@ public final class ProxyTunnelInitHandler extends ChannelDuplexHandler {
         ctx.close();
         sourcePool.release(ctx.channel());
         initPromise.setFailure(new IOException("Could not connect to proxy"));
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        if (!initPromise.isDone()) {
+            handleConnectRequestFailure(ctx, null);
+        }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        if (!initPromise.isDone()) {
+            handleConnectRequestFailure(ctx, cause);
+        } else {
+            ctx.fireExceptionCaught(cause);
+        }
+    }
+
+    private void handleConnectRequestFailure(ChannelHandlerContext ctx, Throwable cause) {
+        ctx.close();
+        sourcePool.release(ctx.channel());
+        String errorMsg = "Unable to send CONNECT request to proxy";
+        IOException ioException = cause == null ? new IOException(errorMsg) :
+                                  new IOException(errorMsg, cause);
+        initPromise.setFailure(ioException);
     }
 
     private HttpRequest connectRequest() {

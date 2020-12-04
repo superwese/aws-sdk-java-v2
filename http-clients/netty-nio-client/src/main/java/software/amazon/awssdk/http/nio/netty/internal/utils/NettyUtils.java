@@ -40,6 +40,14 @@ public final class NettyUtils {
      */
     public static final SucceededFuture<?> SUCCEEDED_FUTURE = new SucceededFuture<>(null, null);
 
+    public static final String CLOSED_CHANNEL_MESSAGE = "The channel was closed. This may have been done by the client (e.g. "
+                                                        + "because the request was aborted), " +
+                                                        "by the service (e.g. because there was a handshake error[use -Djavax"
+                                                        + ".net.debug=ssl to enable SSL logs], the request "
+                                                        + "took too long, or the client tried to write on a read-only socket), " +
+                                                        "or by an intermediary party (e.g. because the channel was idle for too"
+                                                        + " long).";
+
     private static final Logger log = Logger.loggerFor(NettyUtils.class);
 
     private NettyUtils() {

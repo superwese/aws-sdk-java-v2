@@ -1,0 +1,6 @@
+{
+    "category": "Netty NIO HTTP Client", 
+    "contributor": "", 
+    "type": "bugfix", 
+    "description": "Fixed the issue where BAD_CERTIFICATE issue manifested as acquire connection timeout error when using TLS1.3 and proxy."
+}
